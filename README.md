@@ -25,5 +25,5 @@ jobs:
       - name: Comment on commit
         uses: Grafaffel/comments-action@main
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAT: ${{ secrets.PAT }}
 ```

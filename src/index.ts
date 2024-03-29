@@ -2,11 +2,11 @@ import { debug, info, isDebug, setFailed } from "@actions/core"
 import { context, getOctokit } from "@actions/github"
 import type { PushEvent } from "@octokit/webhooks-types"
 
-const token = process.env.GITHUB_TOKEN
+const token = process.env.PAT
 
 async function run() {
     try {
-        if (!token) return setFailed("Invalid GITHUB_TOKEN")
+        if (!token) return setFailed("Invalid PAT")
 
         const octokit = getOctokit(token)
         const { owner, repo } = context.repo
