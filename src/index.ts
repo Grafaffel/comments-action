@@ -3,11 +3,11 @@ import { env } from 'process';
 import { context, getOctokit } from "@actions/github"
 import type { PushEvent } from "@octokit/webhooks-types"
 
-const token = process.env.PAT_TOKEN
+const token = process.env.PAT
 
 async function run() {
     try {
-        info(token)
+        info(JSON.stringify(process.env))
 
         if (!token) return setFailed("Invalid PAT")
 

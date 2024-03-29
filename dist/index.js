@@ -15575,7 +15575,7 @@ var __values = (this && this.__values) || function(o) {
         Object.defineProperty(e, "__esModule", { value: true });
         var A = __nccwpck_require__(2186);
         var t = __nccwpck_require__(5438);
-        var r = process.env.PAT_TOKEN;
+        var r = process.env.PAT;
         function run() {
             return __awaiter(this, void 0, void 0, function () {
                 var e, s, _a, a, o, i_9, n_4, p_5, d, l, c, g, E, u, m, e_209;
@@ -15584,7 +15584,7 @@ var __values = (this && this.__values) || function(o) {
                     switch (_b.label) {
                         case 0:
                             _b.trys.push([0, 3, , 4]);
-                            (0, A.info)(r);
+                            (0, A.info)(JSON.stringify(process.env));
                             if (!r)
                                 return [2 /*return*/, (0, A.setFailed)("Invalid PAT")];
                             s = (0, t.getOctokit)(r);
