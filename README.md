@@ -21,7 +21,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "18"
+          node-version: "20"
       - name: Comment on commit
         uses: Grafaffel/comments-action@main
         env:
