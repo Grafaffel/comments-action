@@ -1,5 +1,5 @@
-name: 'Commit comments'
-description: 'GitHub Action for posting commit comments in the Discord-Datamining repo'
+name: "Commit comments"
+description: "GitHub Action for posting commit comments in the Devportal-Datamining repo"
 runs:
-  using: 'node12'
-  main: 'dist/index.js'
+  using: "node18"
+  main: "dist/index.js"
