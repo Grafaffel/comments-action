@@ -1,11 +1,8 @@
 import { debug, info, isDebug, setFailed } from "@actions/core"
 import { context, getOctokit } from "@actions/github"
-import differ from "@adryd325/discord-datamining-lang-differ"
 import type { PushEvent } from "@octokit/webhooks-types"
 
 const token = process.env.GITHUB_TOKEN
-const filePathRegex = /(?:\/\d{4}\/(?:\d{4}-\d{2}-\d{2}|\d{2}\/\d{2})\/[a-z0-9]{20,}|current)\.js$/
-const currentFilename = "current.js"
 
 async function run() {
     try {
@@ -13,6 +10,11 @@ async function run() {
 
         const octokit = getOctokit(token)
         const { owner, repo } = context.repo
+
+        const commitFiles = [];
+
+        let buildHash: string;
+        let buildNumber: string;
 
         if (context.eventName !== "push") return
 
@@ -25,66 +27,66 @@ async function run() {
             ref: commitSha
         })
 
-        if (!commit)
+        if (!commit) {
             return setFailed("commit not found")
-
-        const commitFile = commit.data.files?.[0]
-
-        if (!commitFile || commitFile?.status !== "modified")
-            return info("not a build commit")
-
-        const { blob_url, sha: fileSha } = commit?.data?.files?.[0]
-
-        if (!filePathRegex?.test(decodeURIComponent(blob_url)))
-            return info("not a build file")
-
-        const currentTree = await octokit.rest.git.getTree({
-            owner,
-            repo,
-            tree_sha: payload.before,
-        })
-        const currentFileSha = currentTree?.data?.tree?.find?.(file => file.path === currentFilename)?.sha
-
-        if (!currentFileSha)
-            return info("no current file")
-
-        const currentFile = await octokit.rest.git.getBlob({
-            owner,
-            repo,
-            file_sha: currentFileSha
-        })
-        const newFile = await octokit.rest.git.getBlob({
-            owner,
-            repo,
-            file_sha: fileSha,
-        })
-
-        const currentContent = Buffer.from(currentFile.data.content, "base64").toString("utf8")
-        const newContent = Buffer.from(newFile.data.content, "base64").toString("utf8")
-        if (isDebug()) {
-            debug(`${currentContent.length}`)
-            debug(`${newContent.length}`)
         }
 
-        let diff: string
-        try {
-            diff = differ(
-                currentContent,
-                newContent,
-                "codeblock",
-            )
-        } catch (e) {
-            return setFailed(`unable to diff strings: ${e}`)
-        }
+        if (commit.data.author.login !== 'github-actions[bot]') return
 
-        if (!diff)
-            return info("no strings changed")
+        commit.data.files?.forEach(file => {
+            commitFiles.push(file.raw_url);
+        });
+
+        commitFiles.forEach(async file => {
+            const response = await fetch(file);
+            const currentScript = await response.text();
+
+            const matchedHash = currentScript.match(/,release:"discord_developers-([^"]+)"/)
+            const matchedBuildNumber = currentScript.match(/var .=parseInt\(null!==\(.="(\d+)"\)/)
+
+            if (matchedHash) {
+                buildHash = matchedHash[1];
+            } else {
+                buildHash = 'unknown';
+            }
+
+            if (buildHash !== 'unknown') {
+                info(`Found build hash: ${buildHash}\n`);
+            }
+
+            if (matchedBuildNumber) {
+                buildNumber = matchedBuildNumber[1];
+            } else {
+                buildNumber = 'unknown';
+            }
+
+            if (buildNumber !== 'unknown') {
+                info(`Found build number: ${buildNumber}\n`);
+            }
+        });
+
+        const added = commit.data.files.map((file) => file.status == "added" && file.filename.split('/').reverse()[0].split('.').reverse()[0] === 'js' ? "+ " + file.filename.split('/').reverse()[0] : "").filter((msg) => msg !== "");
+        const removed = commit.data.files.map((file) => file.status == "removed" && file.filename.split('/').reverse()[0].split('.').reverse()[0] === 'js' ? "- " + file.filename.split('/').reverse()[0] : "").filter((msg) => msg !== "");
+        const modified = commit.data.files.map((file) => file.status == "modified" && file.filename.split('/').reverse()[0].split('.').reverse()[0] === 'js' ? "* " + file.filename.split('/').reverse()[0] : "").filter((msg) => msg !== "");
+
+        const scriptChangelog = [...added, ...removed, ...modified].join("\n");
 
         await octokit.rest.repos.createCommitComment({
             owner,
             repo,
             commit_sha: commitSha,
-            body: diff
+            body: `# New Devportal Build!
+
+            ## Build Number
+            \`\`\`${buildNumber}\`\`\`
+            
+            ## Build Hash
+            \`\`\`${buildHash}\`\`\`
+            
+            ## Scripts
+            \`\`\`diff
+            ${scriptChangelog}
+            \`\`\``
         })
         return info("created commit comment")
     } catch (error) {

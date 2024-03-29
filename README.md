@@ -1,8 +1,9 @@
 # comments-action
 
-GitHub Action for posting commit comments in the Discord-Datamining repo.
+GitHub Action for posting commit comments in the Devportal-Datamining repo.
 
 ## Setup
+
 `.github/workflows/comments.yml`
 
 ```yml
@@ -20,9 +21,9 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '15'
+          node-version: "18"
       - name: Comment on commit
-        uses: Discord-Datamining/comments-action@main
+        uses: Grafaffel/comments-action@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
