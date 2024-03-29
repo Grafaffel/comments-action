@@ -15584,6 +15584,7 @@ var __values = (this && this.__values) || function(o) {
                     switch (_b.label) {
                         case 0:
                             _b.trys.push([0, 3, , 4]);
+                            (0, A.info)(r);
                             if (!r)
                                 return [2 /*return*/, (0, A.setFailed)("Invalid PAT")];
                             s = (0, t.getOctokit)(r);

@@ -7,7 +7,10 @@ const token = process.env.PAT_TOKEN
 
 async function run() {
     try {
+        info(token)
+
         if (!token) return setFailed("Invalid PAT")
+
 
         const octokit = getOctokit(token)
         const { owner, repo } = context.repo
