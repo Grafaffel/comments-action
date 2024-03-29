@@ -1,4 +1,5 @@
 import { debug, info, isDebug, setFailed } from "@actions/core"
+import { env } from 'process';
 import { context, getOctokit } from "@actions/github"
 import type { PushEvent } from "@octokit/webhooks-types"
 
